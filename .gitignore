@@ -1,0 +1,5 @@
+# Verification artifacts fetched at runtime — don't commit downloaded reports
+/report.json
+/report.json.sig
+*.tmp
+.DS_Store
