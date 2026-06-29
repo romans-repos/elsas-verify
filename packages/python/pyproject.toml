@@ -1,0 +1,24 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "elsas-verify"
+version = "0.1.0"
+description = "Offline Ed25519 verification of elsas.it signed security verdicts & reports"
+readme = "README.md"
+requires-python = ">=3.8"
+license = { text = "MIT" }
+authors = [{ name = "elsas.it" }]
+keywords = ["security", "cve", "ed25519", "sshsig", "x402", "mcp", "supply-chain", "verification"]
+dependencies = ["cryptography>=3.4"]
+
+[project.urls]
+Homepage = "https://elsas.it"
+Repository = "https://github.com/romans-repos/elsas-verify"
+
+[project.scripts]
+elsas-verify = "elsas_verify:_cli"
+
+[tool.setuptools]
+packages = ["elsas_verify"]

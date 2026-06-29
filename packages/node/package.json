@@ -1,0 +1,15 @@
+{
+  "name": "@elsas/verify",
+  "version": "0.1.0",
+  "description": "Offline Ed25519 verification of elsas.it signed security verdicts & reports (zero deps)",
+  "type": "module",
+  "main": "index.mjs",
+  "exports": "./index.mjs",
+  "bin": { "elsas-verify": "index.mjs" },
+  "engines": { "node": ">=16" },
+  "files": ["index.mjs", "README.md"],
+  "keywords": ["security", "cve", "ed25519", "sshsig", "x402", "mcp", "supply-chain", "verification"],
+  "homepage": "https://elsas.it",
+  "repository": { "type": "git", "url": "https://github.com/romans-repos/elsas-verify.git" },
+  "license": "MIT"
+}

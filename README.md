@@ -4,17 +4,20 @@
 [elsas.it](https://elsas.it) — offline, with no trust in our servers and no
 access to our keys.**
 
-[elsas.it](https://elsas.it) is a daily, signed security-intelligence service for
-**AI-agent stack operators**: CVEs, supply-chain incidents and advisories
-(GHSA · CISA-KEV · OSV · NVD · national-CERT feeds) assessed for impact on MCP
-servers, LLM proxies and agent orchestration — curated, cross-validated, and
-**Ed25519-signed**. Served as a paid MCP tool for $0.10 USDC via the
-[x402](https://elsas.it/docs) payment protocol.
+[elsas.it](https://elsas.it) is signed security intelligence for **AI agents**,
+served over MCP and paid per call with [x402](https://elsas.it/docs) (USDC on Base —
+accountless, your wallet is your identity). Two shapes:
 
-This repository contains everything a third party needs to **prove a report is
-authentic and untampered** — our public key, the JSON schema, a real signed
-sample report, and a dependency-free verification script. Nothing here is secret;
-every file is also served live from elsas.it. The point is simple:
+- **Atomic primitives** (high-frequency, sub-cent): `is_exploited` (is this CVE in
+  CISA-KEV? $0.001), `check_cve` (CVSS + KEV + EPSS, $0.01), `check_package` (OSV
+  verdict for one package@version, $0.002), `search_cves` ($0.01), `scan_dependencies`
+  (whole-lockfile OSV scan, pay-per-vuln, free when clean).
+- **Premium digest**: `get_today` — the daily curated, cross-validated report ($0.10).
+
+**Every response is Ed25519-signed** (SSHSIG, namespace `elsas-report`) — so you can
+prove it's authentic and untampered *without trusting our servers and without our
+keys*. That's the differentiator: unsigned CVE APIs ask you to trust them; we let you
+verify. This repo is everything you need to do that offline.
 
 > **Don't trust us — verify.**
 
@@ -60,6 +63,35 @@ ssh-keygen -Y verify \
   -s report.json.sig < report.json
 ```
 
+## Verify an atomic-tool verdict
+
+The atomic tools return a JSON verdict with an embedded `_signature` block
+(`signed_payload` = the exact signed bytes; `signature` = an armored SSHSIG). Verify
+it offline — by shell, or with the drop-in library for your language:
+
+```bash
+# shell (ssh-keygen + python3 stdlib)
+./verify-verdict.sh examples/sample-verdict.json allowed_signers
+```
+
+```js
+// Node — zero dependencies (built-in crypto). npm i @elsas/verify
+import { verifyVerdict } from '@elsas/verify';
+const { ok, reason } = verifyVerdict(verdict);   // pinned elsas key, offline
+if (!ok) throw new Error(`unverified elsas verdict: ${reason}`);
+```
+
+```python
+# Python — pip install elsas-verify  (only dep: cryptography)
+from elsas_verify import verify_verdict
+ok, info = verify_verdict(verdict)
+assert ok, info["reason"]
+```
+
+Each verifier does two independent checks: (1) the verdict body matches the signed
+bytes (tamper-evidence), and (2) the SSHSIG verifies under the **pinned** elsas key
+(a signature by any other key is rejected). No network call is needed to verify.
+
 ## Trust model
 
 - Signatures use **SSHSIG (Ed25519)** via `ssh-keygen -Y sign`. Verification is
@@ -79,10 +111,14 @@ ssh-keygen -Y verify \
 
 | File | Purpose |
 |---|---|
-| `verify-report.sh` | Dependency-free verifier (ssh-keygen + python3 stdlib) |
+| `verify-report.sh` | Dependency-free report verifier (ssh-keygen + python3 stdlib) |
+| `verify-verdict.sh` | Dependency-free **atomic-verdict** verifier |
+| `packages/node/` | `@elsas/verify` — zero-dep Node library + CLI |
+| `packages/python/` | `elsas-verify` — Python library + CLI (`pip install`) |
 | `allowed_signers` | Our public signing key — the root of trust |
 | `schemas/report-v4.json` | JSON schema of a report payload |
 | `examples/sample-report.json` (+ `.sig`) | A real, signed report to verify against |
+| `examples/sample-verdict.json` | A real, signed atomic-tool verdict to verify against |
 | `SIGNATURE-VERIFY.md` | The full verification recipe and trust details |
 
 ## What's *not* here
